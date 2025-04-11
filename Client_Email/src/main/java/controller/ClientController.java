@@ -11,6 +11,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Circle;
+import javafx.stage.Stage;
 import javafx.util.Duration;
 import model.ModelClient;
 
@@ -20,6 +21,7 @@ import java.net.Socket;
 
 public class ClientController {
 
+    @FXML private AnchorPane MainArea;
     @FXML private Label TopLabel;
     @FXML private ListView<Message> list;
     @FXML private Label EmailError;
@@ -38,10 +40,19 @@ public class ClientController {
     // Il Model che contiene lo stato dell'applicazione
     private final ModelClient model = new ModelClient();
     private boolean mailVisible = false;
+    private Socket listenerSocket;
+    private Thread listenerThread;
 
     @FXML
     public void initialize() {
         bindModelToView();
+
+        Platform.runLater(() -> {
+            Stage stage = (Stage) MainArea.getScene().getWindow(); // Mail è già nel tuo FXML
+            stage.setOnCloseRequest(event -> {
+                closeConnection();  // chiude il socket all'uscita
+            });
+        });
 
         // Avvio dei thread e dei controlli periodici
         controllaConnessionePeriodicamente();
@@ -102,14 +113,29 @@ public class ClientController {
 
                     Button cancel = new Button("Cancel");
                     cancel.setId("cancel");
-                    cancel.setOnAction(e -> getListView().getItems().remove(item));
+                    cancel.setOnAction(e -> {
+                        try (Socket socket = new Socket("localhost", 1234);
+                             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+                            // Invia al server una richiesta di cancellazione
+                            out.println("DELETE_MESSAGE\n" + item.getFullMessage());
+                            out.println("---END---");
+                            // Rimuove il messaggio dalla lista locale
+                            getListView().getItems().remove(item);
+                        } catch (IOException ex) {
+                            System.out.println("Errore durante la cancellazione: " + ex.getMessage());
+                        }
+                    });
 
                     Button reply = new Button("Reply");
                     reply.setId("reply");
                     reply.setVisible(false);
                     reply.setOnAction(e -> {
                         // Azioni per il reply...
-                        System.out.println("Reply premuto per: " + item.getFirstLine());
+                        String aux = item.getFirstLine();
+                        MailText.setText("---- Reply ----\n");
+                        aux = aux.substring(aux.indexOf(": ") + 2);
+                        Receiver.setText(aux);
+                        toggleMailArea();
                     });
 
                     buttonsVBox.getChildren().addAll(forward, cancel, reply);
@@ -230,40 +256,57 @@ public class ClientController {
 
     /** Avvia il thread che ascolta i messaggi dal server */
     private void startMessageListener() {
-        Thread listener = new Thread(() -> {
+        listenerThread = new Thread(() -> {
             while (true) {
-                try (Socket socket = new Socket("localhost", 1234);
-                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
+                try {
+                    listenerSocket = new Socket("localhost", 1234);
+                    try (PrintWriter out = new PrintWriter(listenerSocket.getOutputStream(), true);
+                         BufferedReader in = new BufferedReader(new InputStreamReader(listenerSocket.getInputStream()))) {
 
-                    out.println("CLIENT:" + model.getUserEmail());
-                    out.println("---END---");
+                        out.println("CLIENT:" + model.getUserEmail());
+                        out.println("---END---");
 
-                    StringBuilder messageBuilder = new StringBuilder();
-                    String line;
-                    while ((line = in.readLine()) != null) {
-                        if (line.equals("---END---")) {
-                            String completeMessage = messageBuilder.toString().trim();
-                            Platform.runLater(() -> model.getInbox().add(0, new Message(completeMessage)));
-                            messageBuilder.setLength(0);
-                        } else {
-                            messageBuilder.append(line).append("\n");
+                        StringBuilder messageBuilder = new StringBuilder();
+                        String line;
+                        while ((line = in.readLine()) != null) {
+                            if (line.equals("---END---")) {
+                                String completeMessage = messageBuilder.toString().trim();
+                                Platform.runLater(() -> model.getInbox().add(0, new Message(completeMessage)));
+                                messageBuilder.setLength(0);
+                            } else {
+                                messageBuilder.append(line).append("\n");
+                            }
                         }
                     }
                 } catch (IOException e) {
                     System.out.println("Errore di connessione, riprovo... (" + e.getMessage() + ")");
                     try {
                         Thread.sleep(2000);
-                    } catch (InterruptedException ignored) { }
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
         });
-        listener.setDaemon(true);
-        listener.start();
+        listenerThread.setDaemon(true);
+        listenerThread.start();
     }
 
     /** Stampa l'errore (eventualmente da sostituire con una notifica all'utente) */
     private void showError(Exception e) {
         System.out.println("Errore: " + e.getMessage());
+    }
+
+    public void closeConnection() {
+        try {
+            if (listenerSocket != null && !listenerSocket.isClosed()) {
+                listenerSocket.close(); // Questo fa uscire il ciclo lato server
+            }
+            if (listenerThread != null && listenerThread.isAlive()) {
+                listenerThread.interrupt(); // opzionale
+            }
+            System.out.println("Connessione chiusa dal client");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
