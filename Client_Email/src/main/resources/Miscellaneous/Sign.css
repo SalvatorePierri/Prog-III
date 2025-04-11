@@ -1,0 +1,70 @@
+.my-button{
+    -fx-background-color:  #2196F3;
+    -fx-text-fill:  white;
+    -fx-background-radius:  8px;
+}
+
+.my-button:hover {
+    -fx-background-color: #00e79d;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.3), 10, 0, 0, 5);
+}
+
+.SendMail{
+    -fx-background-color: #A6B7EC;
+    -fx-background-radius: 0;
+}
+
+.SendMail:hover{
+    -fx-background-color: #99ade9;
+    -fx-background-radius: 0;
+}
+
+.CloseMail{
+    -fx-background-color: #e29898;
+    -fx-background-radius: 0;
+}
+
+.CloseMail:hover{
+    -fx-background-color: #d18585;
+    -fx-background-radius: 0;
+}
+
+.list-view {
+    -fx-background-color: #2196F3;
+}
+
+.list-cell {
+    -fx-background-color: #2196F3;
+    -fx-font-size:20px;
+    -fx-text-fill:#ececec;
+}
+
+.list-cell:odd {
+    -fx-background-color: #3ba0f3; /* Colore per le celle dispari */
+}
+
+.list-cell:even {
+    -fx-background-color: #2196F3; /* Colore per le celle pari */
+}
+
+#forward {
+    -fx-pref-width: 100px;  /* Larghezza preferita */
+    -fx-pref-height: 30px;  /* Altezza preferita */
+    -fx-font-size: 12px;    /* Dimensione del testo */
+}
+
+#cancel {
+    -fx-pref-width: 100px;  /* Larghezza preferita */
+    -fx-pref-height: 30px;  /* Altezza preferita */
+    -fx-font-size: 12px;    /* Dimensione del testo */
+}
+
+#reply {
+    -fx-pref-width: 100px;  /* Larghezza preferita */
+    -fx-pref-height: 30px;  /* Altezza preferita */
+    -fx-font-size: 12px;    /* Dimensione del testo */
+}
+
+#vbox {
+    -fx-layout-x: 200px;
+}
