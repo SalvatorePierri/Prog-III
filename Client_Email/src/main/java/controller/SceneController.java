@@ -41,7 +41,6 @@ public class SceneController {
 
     private void Check(){
         final String EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
-        System.out.println(EMAIL_REGEX);
         emailField.textProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue.matches(EMAIL_REGEX)) {
                 errorLabel.setVisible(false);

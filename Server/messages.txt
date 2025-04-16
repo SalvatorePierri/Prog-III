@@ -1,13 +1,70 @@
 DA: Simonepanetti@gmail.com
-A: Simonepanetti@gmail.com
-ciao
+A: Lauraspadaro22@hotmail.net
+Ciao laura come va?
+---END---
+DA: Simonepanetti@gmail.com
+A: Giacomoporetti@yahoo.it
+---- Reply ----
+
+Gay di merda muori
+---END---
+DA: Simonepanetti@gmail.com
+A: Giacomoporetti@yahoo.it
+---- Reply ----
+Ciao mamma
+---END---
+DA: Simonepanetti@gmail.com
+A: Lauraspadaro22@hotmail.net
+carta
+---END---
+DA: Simonepanetti@gmail.com
+A: Giacomoporetti@yahoo.it
+carta
 ---END---
 DA: Simonepanetti@gmail.com
 A: Simonepanetti@gmail.com
-ciao2
+Sortino
 ---END---
-DA: Lauraspadaro22@hotmail.net
+DA: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+---- Forwarded Message ----
+DA: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+Sortino
+---END---
+DA: Simonepanetti@gmail.com E: lauraspadaro22@hotmail.net
 A: Simonepanetti@gmail.com
 Ciao
+
+---END---
+DA: Simonepanetti@gmail.com E: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+cartellino
+
+---END---
+DA: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+---- Reply ----
+
+corleone
+
+---END---
+DA: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+---- Reply ----
+
+corleone
+
+---END---
+DA: Simonepanetti@gmail.com E: simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+Carta
+
+---END---
+DA: Simonepanetti@gmail.com
+A: Simonepanetti@gmail.com
+---- Reply ----
+
+ciao
 
 ---END---

@@ -3,10 +3,11 @@ package controller;
 import app.GeneralUser;
 import app.Message;
 import javafx.animation.KeyFrame;
+import javafx.animation.PauseTransition;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -21,6 +22,7 @@ import java.net.Socket;
 
 public class ClientController {
 
+    @FXML private TextField CoSender;
     @FXML private AnchorPane MainArea;
     @FXML private Label TopLabel;
     @FXML private ListView<Message> list;
@@ -42,6 +44,23 @@ public class ClientController {
     private boolean mailVisible = false;
     private Socket listenerSocket;
     private Thread listenerThread;
+    final String EMAIL_REGEX = "^$|^([A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,})(,\\s*[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,})*$";
+
+    ChangeListener<String> lockReplyHeaderListener = (obs, oldText, newText) -> {
+            String prefix = "---- Reply ----\n";
+            if (!newText.startsWith(prefix)) {
+                MailText.setText(oldText); // Torna al testo precedente se prova a modificare l’intestazione
+                MailText.positionCaret(oldText.length()); // Rimetti il cursore in fondo
+            }
+    };
+
+    ChangeListener<String> lookForEmailFormat = (obs, oldText, newText) -> {
+            if (newText.matches(EMAIL_REGEX)) {
+                model.setEmailNonValida(false);
+            }else{
+                model.setEmailNonValida(true);
+            }
+    };
 
     @FXML
     public void initialize() {
@@ -59,7 +78,17 @@ public class ClientController {
         startMessageListener();
 
         // Gestione degli eventi dei bottoni per mostrare/nascondere l'area mail
-        SendMail.setOnAction(e -> toggleMailArea());
+        SendMail.setOnAction(e -> {
+            Receiver.textProperty().addListener(lookForEmailFormat);
+            CoSender.textProperty().addListener(lookForEmailFormat);
+            MailText.textProperty().removeListener(lockReplyHeaderListener);
+            Receiver.setDisable(false);
+            Receiver.clear();
+            CoSender.clear();
+            MailText.clear();
+            TextForward.clear();
+            toggleMailArea();
+        });
         CloseMail.setOnAction(e -> toggleMailArea());
 
         // Invia email dal bottone "Send"
@@ -97,12 +126,15 @@ public class ClientController {
                     mainHBox.setAlignment(Pos.CENTER_LEFT);
 
                     Label messageLabel = new Label(item.getFirstLine());
+                    messageLabel.setMaxWidth(1100);
+                    messageLabel.setWrapText(true);
                     HBox.setHgrow(messageLabel, Priority.ALWAYS);
 
                     // Contenitore per i bottoni con padding simile a quello originale (margine sinistro = 880)
                     HBox buttonsContainer = new HBox(5);
                     buttonsContainer.setAlignment(Pos.CENTER_RIGHT);
-                    buttonsContainer.setPadding(new Insets(0, 0, 0, 830));
+                    buttonsContainer.setMaxWidth(150);
+                    buttonsContainer.setMinWidth(150);
 
                     VBox buttonsVBox = new VBox(5);
                     buttonsVBox.setId("vbox");
@@ -123,6 +155,7 @@ public class ClientController {
                             getListView().getItems().remove(item);
                         } catch (IOException ex) {
                             System.out.println("Errore durante la cancellazione: " + ex.getMessage());
+                            Errore();
                         }
                     });
 
@@ -130,15 +163,37 @@ public class ClientController {
                     reply.setId("reply");
                     reply.setVisible(false);
                     reply.setOnAction(e -> {
-                        // Azioni per il reply...
-                        String aux = item.getFirstLine();
-                        MailText.setText("---- Reply ----\n");
-                        aux = aux.substring(aux.indexOf(": ") + 2);
-                        Receiver.setText(aux);
-                        toggleMailArea();
+                        if(!mailVisible) {
+                            // Azioni per il reply...
+                            String aux = item.getFirstLine();
+                            MailText.setText("---- Reply ----\n");
+                            aux = aux.substring(aux.indexOf(": ") + 2);
+                            aux = aux.substring(0, aux.indexOf(" E: "));
+                            Receiver.setText(aux);
+                            Receiver.setDisable(true);
+                            toggleMailArea();
+                            MailText.textProperty().addListener(lockReplyHeaderListener);
+                        }
                     });
 
-                    buttonsVBox.getChildren().addAll(forward, cancel, reply);
+                    Button replyAll = new Button("ReplyAll");
+                    replyAll.setId("replyAll");
+                    replyAll.setVisible(false);
+                    replyAll.setOnAction(e -> {
+                        if(!mailVisible) {
+                            // Azioni per il reply...
+                            String aux = item.getFirstLine();
+                            MailText.setText("---- Reply ----\n");
+                            aux = aux.substring(aux.indexOf(": ") + 2);
+                            aux = aux.replace(" E: ", ", ");
+                            Receiver.setText(aux);
+                            Receiver.setDisable(true);
+                            toggleMailArea();
+                            MailText.textProperty().addListener(lockReplyHeaderListener);
+                        }
+                    });
+
+                    buttonsVBox.getChildren().addAll(forward, cancel, reply, replyAll);
                     buttonsContainer.getChildren().add(buttonsVBox);
 
                     mainHBox.getChildren().addAll(messageLabel, buttonsContainer);
@@ -149,8 +204,10 @@ public class ClientController {
                         if (messageLabel.getText().equals(item.getFirstLine())) {
                             messageLabel.setText(item.getFullMessage());
                             reply.setVisible(true);
+                            replyAll.setVisible(true);
                         } else {
                             reply.setVisible(false);
+                            replyAll.setVisible(false);
                             messageLabel.setText(item.getFirstLine());
                         }
                     });
@@ -204,9 +261,14 @@ public class ClientController {
                     if (!MailText.getText().isEmpty()) {
                         try (Socket socket = new Socket("localhost", 1234);
                              PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
-                            out.println("DA: " + model.getUserEmail() + "\nA: " + utente.getEmail() + "\n" + MailText.getText());
+                            if(CoSender.getText().isEmpty() || CoSender.getText().isBlank() || CoSender == null) {
+                                out.println("DA: " + model.getUserEmail() + "\nA: " + utente.getEmail() + "\n" + MailText.getText());
+                            }else{
+                                out.println("DA: " + model.getUserEmail() + " E: " + CoSender.getText() + "\nA: " + utente.getEmail() + "\n" + MailText.getText());
+                            }
                         } catch (IOException ex) {
                             System.out.println("Errore nell'invio: " + ex.getMessage());
+                            Errore();
                         }
                     }
                     // Nasconde l'area mail dopo l'invio
@@ -216,13 +278,38 @@ public class ClientController {
             }
             ForwardArea.setVisible(false);
             if (!found) {
-                model.setEmailNonValida(true);
+                emailNotFound();
             }
         }
         // Pulizia dei campi di testo
+        MailText.textProperty().removeListener(lockReplyHeaderListener);
+        CoSender.clear();
+        Receiver.setDisable(false);
         Receiver.clear();
         MailText.clear();
         TextForward.clear();
+    }
+
+    private void emailNotFound() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Errore Email");
+        alert.setHeaderText(null); // puoi rimuovere o personalizzare l'intestazione
+        alert.setContentText("Email non esistente!");
+        alert.show();
+        PauseTransition delay = new PauseTransition(Duration.seconds(2));
+        delay.setOnFinished(event -> alert.close());
+        delay.play();
+    }
+
+    private void Errore() {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle("Errore 404");
+        alert.setHeaderText(null); // puoi rimuovere o personalizzare l'intestazione
+        alert.setContentText("Server Error - 404");
+        alert.show();
+        PauseTransition delay = new PauseTransition(Duration.seconds(2));
+        delay.setOnFinished(event -> alert.close());
+        delay.play();
     }
 
     /** Gestisce l'azione del pulsante "Forward" all'interno di una cella della ListView */

@@ -45,30 +45,35 @@
                   <Font name="Calibri" size="18.0" />
                </font>
             </TextField>
-            <TextArea fx:id="MailText" layoutX="9.0" layoutY="97.0" prefHeight="310.0" prefWidth="582.0">
+            <TextArea fx:id="MailText" layoutX="9.0" layoutY="97.0" prefHeight="286.0" prefWidth="582.0">
                <font>
                   <Font name="Calibri" size="16.0" />
                </font>
             </TextArea>
             <AnchorPane opacity="0.34" prefHeight="39.0" prefWidth="536.0" style="-fx-background-color: #2196F3;" />
-            <Line endY="2.0" startY="469.0" />
-            <Button fx:id="SendButton" layoutX="462.0" layoutY="418.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="129.0" styleClass="SendButton" stylesheets="@../Miscellaneous/Sign.css" text="Send">
-               <font>
-                  <Font name="Shifty Notes Regular" size="21.0" />
-               </font>
-            </Button>
-            <Label fx:id="EmailError" layoutX="494.0" layoutY="57.0" text="Email not found" textFill="RED" visible="false">
+            <Label fx:id="EmailError" layoutX="10.0" layoutY="8.0" text="Receiver or Co-Sender address not found" textFill="RED" visible="false">
                <font>
                   <Font name="Shifty Notes Regular" size="17.0" />
                </font>
             </Label>
+            <Line endY="2.0" startY="469.0" />
+            <Button fx:id="SendButton" layoutX="462.0" layoutY="403.0" mnemonicParsing="false" prefHeight="38.0" prefWidth="129.0" styleClass="SendButton" stylesheets="@../Miscellaneous/Sign.css" text="Send">
+               <font>
+                  <Font name="Shifty Notes Regular" size="21.0" />
+               </font>
+            </Button>
+            <TextField fx:id="CoSender" layoutX="9.0" layoutY="403.0" prefHeight="39.0" prefWidth="434.0" promptText="Co-Sender">
+               <font>
+                  <Font name="Calibri" size="18.0" />
+               </font>
+            </TextField>
          </children>
       </AnchorPane>
       <AnchorPane layoutX="-1.0" layoutY="140.0" prefHeight="761.0" prefWidth="255.0" style="-fx-background-color: #9FB3DF;" />
       <AnchorPane fx:id="ForwardArea" layoutX="254.0" layoutY="760.0" opacity="0.9" prefHeight="141.0" prefWidth="714.0" style="-fx-background-color: white;" visible="false">
          <children>
             <TextField fx:id="TextForward" layoutX="15.0" layoutY="59.0" prefHeight="39.0" prefWidth="685.0" promptText="Receiver" />
-            <Button fx:id="SendForward"  layoutX="578.0" layoutY="102.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="122.0" text="Button" />
+            <Button fx:id="SendForward" layoutX="578.0" layoutY="102.0" mnemonicParsing="false" prefHeight="34.0" prefWidth="122.0" text="Forward" />
             <Button fx:id="CloseForward" layoutX="650.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="64.0" styleClass="CloseMail" stylesheets="@../Miscellaneous/Sign.css" text="X">
                <font>
                   <Font name="Shifty Notes Regular" size="21.0" />

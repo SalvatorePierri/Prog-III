@@ -65,6 +65,12 @@
     -fx-font-size: 12px;    /* Dimensione del testo */
 }
 
+#replyAll {
+    -fx-pref-width: 100px;  /* Larghezza preferita */
+    -fx-pref-height: 30px;  /* Altezza preferita */
+    -fx-font-size: 12px;    /* Dimensione del testo */
+}
+
 #vbox {
     -fx-layout-x: 200px;
 }
